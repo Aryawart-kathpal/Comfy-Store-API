@@ -6,6 +6,7 @@ const app =express();
 
 // other packages
 const morgan = require('morgan');
+// const populateData = require('./populate');
 
 //database
 const connectDB = require('./db/connect');
@@ -17,6 +18,7 @@ const rateLimiter = require('express-rate-limit');
 
 //routes
 const authRoutes = require('./routes/authRoutes');
+const productRoutes = require('./routes/productRoutes');
 
 // import middlewares
 const cookieParser = require('cookie-parser');
@@ -38,6 +40,7 @@ app.use(express.json());
 //     res.send('Hello to comfy store');
 // })
 app.use('/api/v1/auth',authRoutes);
+app.use('/api/v1/products',productRoutes);
 
 
 app.use(notFoundMiddleware);
@@ -45,6 +48,7 @@ app.use(errorHandlerMiddleware);
 
 const port=process.env.PORT || 5000;
 
+// populateData();
 const start = async()=>{
     try {
         await connectDB(process.env.MONGO_URI);
