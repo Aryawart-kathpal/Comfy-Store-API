@@ -12,15 +12,16 @@ const createProduct = async(req,res)=>{
 //search,category,company,shipping,price,order,featured
 const getAllProducts = async(req,res)=>{
     const {search,category,featured,company,shipping,price,order} = req.query;
-    // console.log(order);
-    // order=order.toString();
-    // // console.log(order);
-    // console.log(typeof order);
+    
+    const categories = ['all','Sofas','Chairs','Tables','Beds','Kids'];
+    const companies = ['all','Luxora','Comfora','Modenza','Homestead','Artifex'];
+
     const queryObject={};
     if(search){
         queryObject.title ={$regex:search,$options:'i'};
     }
     if(category && category !== 'all'){
+        // console.log(category);
         queryObject.category = category;
     }
     if(featured){
@@ -28,12 +29,16 @@ const getAllProducts = async(req,res)=>{
     }
     if(company && company !== 'all'){
         queryObject.company = company;
+        // console.log(queryObject);
     }
-    if(shipping){
-        queryObject.shipping = shipping;
+    // if(shipping && shipping==='on'){
+    //     queryObject.shipping = true;
+    // }
+    if(shipping && shipping === 'on'){
+        queryObject.shipping=true;
     }
     if(price){
-        queryObject.price = {$lt:price};
+        queryObject.price = {$lt:parseInt(price)};
     }
 
     // if(order==='a-z'){
@@ -49,26 +54,29 @@ const getAllProducts = async(req,res)=>{
     // let result =Product.find(queryObject);
     let productCount= await Product.find(queryObject).countDocuments();
     // console.log(productCount);
-    let sortOrder = {
-        createdAt : -1,
+    let sortOrder={
+        lowerTitle:1
     };
-    if (order === 'a-z') {
+    if (order && order === 'a-z') {
         sortOrder.lowerTitle = 1;
-    } else if (order === 'z-a') {
-        sortOrder.lowerTitle = -1;
-    } else if (order === 'latest') {
-        sortOrder.createdAt = -1;
-    } else if (order === 'oldest') {
-        sortOrder.createdAt = 1;
     }
-
+    if (order && order === 'z-a') {
+        sortOrder.lowerTitle = -1;
+    }
+    if(order && order==='high'){
+        sortOrder.price=-1;
+    }
+    if(order && order==='low'){
+        sortOrder.price=1;
+    }
     const page = req.query.page || 1;
     const limit=10;
     const skip=(page-1)*limit;
+
     const aggregationPipeline =[
         {$match:queryObject},
         {$addFields:{lowerTitle:{$toLower:"$title"}}},
-        {$sort:sortOrder},
+        {$sort:sortOrder||{createdAt:-1}},
         {$skip:skip},
         {$limit:limit},
         {$project:{lowerTitle:0}},
@@ -79,7 +87,7 @@ const getAllProducts = async(req,res)=>{
 
     res.status(StatusCodes.OK).json({products:result,pagination:{
         page,pageSize:limit,pageCount:Math.ceil(productCount/limit),total:productCount,
-    }});
+    },categories,companies});
 }
 
 const getSingleProduct = async(req,res)=>{
