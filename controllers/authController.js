@@ -30,9 +30,9 @@ const login = async(req,res)=>{
     }
 
     const tokenUser = createTokenUser(user);
-    attachCookiesToResponse({res,user:tokenUser});
+    const token = attachCookiesToResponse({res,user:tokenUser});
     
-    res.status(StatusCodes.OK).json({user:tokenUser});
+    res.status(StatusCodes.OK).json({user:tokenUser,jwt:token});
 }
 
 const logout = async(req,res)=>{
