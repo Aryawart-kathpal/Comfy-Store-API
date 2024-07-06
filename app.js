@@ -48,6 +48,10 @@ app.use('/api/v1/products',productRoutes);
 app.use('/api/v1/orders',orderRoutes);
 
 
+app.get('/',(req,res)=>{
+    res.send('This is Comfy store API');
+});
+
 app.use(notFoundMiddleware);
 app.use(errorHandlerMiddleware);
 
